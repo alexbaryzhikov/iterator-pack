@@ -1,9 +1,18 @@
-plugins {
-    id 'java'
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
+    }
 }
 
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
 group 'com.alexb'
-version '1.0-SNAPSHOT'
+version getGitVersionName()
 
 sourceCompatibility = 1.8
 
@@ -13,4 +22,75 @@ repositories {
 
 dependencies {
     testImplementation 'junit:junit:4.13'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        IteratorPack(MavenPublication) {
+            from components.java
+            pom {
+                name = 'Iterators'
+                description = 'A collection of iterators'
+                url = 'https://github.com/alexbaryzhikov/iterator-pack'
+                licenses {
+                    license {
+                        name = 'The Apache Software License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'alexb'
+                        name = 'Alex Baryzhikov'
+                        email = 'aleksiarts@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git@github.com:alexbaryzhikov/iterator-pack.git'
+                    developerConnection = 'scm:git:git@github.com:alexbaryzhikov/iterator-pack.git'
+                    url = 'scm:git:git@github.com:alexbaryzhikov/iterator-pack.git'
+                }
+                issueManagement {
+                    system = 'github'
+                    url = 'https://github.com/alexbaryzhikov/iterator-pack/issues'
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_APIKEY')
+    publications = ['IteratorPack']
+    pkg {
+        repo = 'iterator-pack'
+        name = 'iterators'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/alexbaryzhikov/iterator-pack'
+    }
+}
+
+def getGitTagDescription() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        workingDir "${projectDir}"
+        commandLine 'git', 'describe', '--tags'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
+def getGitVersionName() {
+    def versionArray = getGitTagDescription().split('-')
+    if (versionArray.length > 1) {
+        return versionArray[0] + '.' + versionArray[1]
+    } else {
+        return versionArray[0] + '.0'
+    }
 }
