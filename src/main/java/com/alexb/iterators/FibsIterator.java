@@ -19,7 +19,8 @@ package com.alexb.iterators;
 import java.util.Iterator;
 
 /**
- * Generates a sequence of Fibonacci numbers.<br>
+ * Generates a sequence of Fibonacci numbers.
+ * <p>
  * The beginning of the sequence is: 0 1 1 2 3 5 8 13 21 34 55 89 144 ...
  */
 public class FibsIterator implements Iterator<Long> {

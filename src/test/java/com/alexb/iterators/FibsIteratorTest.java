@@ -28,10 +28,13 @@ public class FibsIteratorTest {
     public void generate_fibs() {
         FibsIterator iterator = new FibsIterator();
         StringBuilder result = new StringBuilder();
-        for (long i = iterator.next(); iterator.hasNext() && i <= 317811; i = iterator.next()) {
+        while (iterator.hasNext()) {
+            long i = iterator.next();
             result.append(i).append(' ');
+            if (i >= 317811) {
+                break;
+            }
         }
         assertEquals(FIBS, result.toString());
     }
 }
-
