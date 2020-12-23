@@ -9,6 +9,11 @@ import static org.junit.Assert.assertEquals;
 public class DivisorsIteratorTest {
 
     @Test
+    public void divisors_of_0() {
+        assertEquals(Collections.emptyList(), getDivisors(0));
+    }
+
+    @Test
     public void divisors_of_1() {
         assertEquals(Collections.emptyList(), getDivisors(1));
     }
