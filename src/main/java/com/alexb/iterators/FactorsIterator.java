@@ -6,9 +6,9 @@ import java.util.NoSuchElementException;
 /**
  * Generates prime factors of the input number.
  * <p>
- * 5 -> 5 <br>
- * 6 -> 2 3 <br>
- * 864 -> 2 2 2 2 2 3 3 3
+ * 5 &rarr; 5 <br>
+ * 6 &rarr; 2 3 <br>
+ * 864 &rarr; 2 2 2 2 2 3 3 3
  */
 public class FactorsIterator implements Iterator<Long> {
     private long n;

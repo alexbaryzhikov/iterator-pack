@@ -9,8 +9,8 @@ import java.util.*;
  * to the order of the input collection. So, if the input collection is
  * sorted, the combination tuples will be produced in sorted order.
  * <p>
- * ([A, B, C, D], 2) -> AB AC AD BA BC BD CA CB CD DA DB DC <br>
- * ([0, 1, 2], 3) -> 012 021 102 120 201 210
+ * ([A, B, C, D], 2) &rarr; AB AC AD BA BC BD CA CB CD DA DB DC <br>
+ * ([0, 1, 2], 3) &rarr; 012 021 102 120 201 210
  */
 public class PermutationsIterator<T> implements Iterator<List<T>> {
     private final T[] items;
