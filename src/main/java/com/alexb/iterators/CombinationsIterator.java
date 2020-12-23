@@ -20,8 +20,8 @@ public class CombinationsIterator<T> implements Iterator<List<T>> {
     private List<T> combination;
 
     /**
-     * @param items a collection of items
-     * @param k     size of a combination tuple
+     * @param items the input collection
+     * @param k     size of the combination tuple
      */
     @SuppressWarnings({"unchecked"})
     public CombinationsIterator(Collection<T> items, int k) {
