@@ -202,4 +202,52 @@ public class PartitionsIteratorTest {
         }
         assertEquals(expected, result);
     }
+
+    @Test
+    public void partitions_iterator_empty_list() {
+        PartitionsIterator<Character> it = new PartitionsIterator<>(Arrays.asList());
+        List<List<List<Character>>> result = new ArrayList<>();
+        while (it.hasNext()) {
+            result.add(it.next());
+        }
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void partitions_iterator_singleton_list() {
+        PartitionsIterator<Character> it = new PartitionsIterator<>(Arrays.asList('A'));
+        List<List<List<Character>>> expected = Arrays.asList(Arrays.asList(Arrays.asList('A')));
+        List<List<List<Character>>> result = new ArrayList<>();
+        while (it.hasNext()) {
+            result.add(it.next());
+        }
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void partitions_iterator_multiple_element_list() {
+        PartitionsIterator<Character> it = new PartitionsIterator<>(Arrays.asList('A', 'B', 'C', 'D'));
+        List<List<List<Character>>> expected = Arrays.asList(
+                Arrays.asList(Arrays.asList('A', 'B', 'C', 'D')),
+                Arrays.asList(Arrays.asList('A', 'B', 'C'), Arrays.asList('D')),
+                Arrays.asList(Arrays.asList('A', 'B', 'D'), Arrays.asList('C')),
+                Arrays.asList(Arrays.asList('A', 'C', 'D'), Arrays.asList('B')),
+                Arrays.asList(Arrays.asList('B', 'C', 'D'), Arrays.asList('A')),
+                Arrays.asList(Arrays.asList('A', 'B'), Arrays.asList('C', 'D')),
+                Arrays.asList(Arrays.asList('A', 'C'), Arrays.asList('B', 'D')),
+                Arrays.asList(Arrays.asList('A', 'D'), Arrays.asList('B', 'C')),
+                Arrays.asList(Arrays.asList('A', 'B'), Arrays.asList('C'), Arrays.asList('D')),
+                Arrays.asList(Arrays.asList('A', 'C'), Arrays.asList('B'), Arrays.asList('D')),
+                Arrays.asList(Arrays.asList('A', 'D'), Arrays.asList('B'), Arrays.asList('C')),
+                Arrays.asList(Arrays.asList('B', 'C'), Arrays.asList('A'), Arrays.asList('D')),
+                Arrays.asList(Arrays.asList('B', 'D'), Arrays.asList('A'), Arrays.asList('C')),
+                Arrays.asList(Arrays.asList('C', 'D'), Arrays.asList('A'), Arrays.asList('B')),
+                Arrays.asList(Arrays.asList('A'), Arrays.asList('B'), Arrays.asList('C'), Arrays.asList('D'))
+        );
+        List<List<List<Character>>> result = new ArrayList<>();
+        while (it.hasNext()) {
+            result.add(it.next());
+        }
+        assertEquals(expected, result);
+    }
 }

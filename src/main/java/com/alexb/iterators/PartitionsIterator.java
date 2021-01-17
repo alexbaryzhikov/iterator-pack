@@ -1,50 +1,34 @@
 package com.alexb.iterators;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class PartitionsIterator<T> implements Iterator<List<List<T>>> {
     private final List<T> items;
-    private int k = 2;
+    private int parts = 1;
     private Templates templates;
     private Partitions<T> partitions;
 
     public PartitionsIterator(Collection<T> items) {
         this.items = new ArrayList<>(items);
-        partitions = new Partitions<>(this.items, new int[]{items.size()});
     }
 
     @Override
     public boolean hasNext() {
-        return k <= items.size();
+        return parts <= items.size();
     }
 
     @Override
     public List<List<T>> next() {
-        if (k > items.size()) {
+        if (parts > items.size()) {
             throw new NoSuchElementException();
         }
-
-        List<List<T>> partition = null;
-
-/*
-        if (partitions.hasNext()) {
-            partition = partitions.next();
-        } else if (templates != null && templates.hasNext()) {
+        if (partitions == null || !partitions.hasNext()) {
+            if (templates == null || !templates.hasNext()) {
+                templates = new Templates(items.size(), parts++);
+            }
             partitions = new Partitions<>(items, templates.next());
-            partition = partitions.next();
-        } else {
-            templates = new Templates(items.size(), k, 1);
-            partitions = new Partitions<>(items, templates.next());
-            partition = partitions.next();
         }
-*/
-
-        if (!partitions.hasNext() && !templates.hasNext()) {
-            k++;
-        }
-
-        return partition;
+        return partitions.next();
     }
 
     /**
@@ -105,26 +89,26 @@ public class PartitionsIterator<T> implements Iterator<List<List<T>>> {
     public static class Partitions<T> implements Iterator<List<List<T>>> {
         private final List<T> items;
         private final int[] template;
-        private final Map<T, Integer> itemPos;
-        private List<CombinationsIterator<T>> parts;
-        private List<List<T>> partition;
+        private final List<Integer> indexes;
+        private List<CombinationsIterator<Integer>> parts;
+        private List<List<Integer>> partition;
 
         public Partitions(List<T> items, int[] template) {
             this.items = items;
             this.template = template;
-            itemPos = new HashMap<>(items.size());
+            indexes = new ArrayList<>(items.size());
             for (int i = 0; i < items.size(); i++) {
-                itemPos.put(items.get(i), i);
+                indexes.add(i);
             }
             if (items.size() != sum(template)) {
                 return;
             }
             parts = new ArrayList<>(template.length);
             partition = new ArrayList<>(template.length);
-            List<T> pool = new ArrayList<>(items);
-            for (int partSize : template) {
-                CombinationsIterator<T> it = new CombinationsIterator<>(pool, partSize);
-                List<T> part = it.next();
+            List<Integer> pool = new ArrayList<>(indexes);
+            for (int i : template) {
+                CombinationsIterator<Integer> it = new CombinationsIterator<>(pool, i);
+                List<Integer> part = it.next();
                 parts.add(it);
                 partition.add(part);
                 pool.removeAll(part);
@@ -149,76 +133,68 @@ public class PartitionsIterator<T> implements Iterator<List<List<T>>> {
             if (partition == null) {
                 throw new NoSuchElementException();
             }
-
-            List<List<T>> result = new ArrayList<>(partition);
-
-            for (int i = parts.size() - 1; i >= 0; i--) {
-                if (!parts.get(i).hasNext()) {
-                    if (i == 0) {
-                        // Partition combinations exhausted.
-                        partition = null;
-                    }
-                    continue;
-                }
-
-                List<T> pool = new ArrayList<>(items);
-                for (int j = 0; j < i; j++) {
-                    pool.removeAll(partition.get(j));
-                }
-                boolean done = true;
-                for (
-                        CombinationsIterator<T> it = parts.get(i);
-                        i < parts.size();
-                        i++
-                ) {
-                    List<T> part = it.next();
-                    if (i > 0 && template[i] == template[i - 1]) {
-                        // Ensure natural order of parts, thus uniqueness of combinations.
-                        while (gt(partition.get(i - 1), part)) {
-                            if (it.hasNext()) {
-                                part = it.next();
-                            } else {
-                                part = null;
-                                break;
-                            }
-                        }
-                    }
-                    if (part != null) {
-                        parts.set(i, it);
-                        partition.set(i, part);
-                        pool.removeAll(part);
-                        if (i + 1 < template.length) {
-                            it = new CombinationsIterator<>(pool, template[i + 1]);
-                        }
-                    } else {
-                        done = false;
-                        break;
-                    }
-                }
-                if (done) {
-                    break;
-                }
+            List<List<T>> result = partitionAsItems();
+            int i = parts.size() - 1;
+            while (i >= 0 && !updateParts(i)) {
+                i--;
             }
-
+            if (i == -1) {
+                // Partition combinations exhausted.
+                partition = null;
+            }
             return result;
         }
 
-        private boolean gt(List<T> a, List<T> b) {
+        private List<List<T>> partitionAsItems() {
+            List<List<T>> result = new ArrayList<>(partition.size());
+            for (List<Integer> part : partition) {
+                List<T> p = new ArrayList<>(part.size());
+                for (int i : part) {
+                    p.add(items.get(i));
+                }
+                result.add(p);
+            }
+            return result;
+        }
+
+        private boolean updateParts(int from) {
+            if (!parts.get(from).hasNext()) {
+                return false;
+            }
+            List<Integer> pool = new ArrayList<>(indexes);
+            for (int i = 0; i < from; i++) {
+                pool.removeAll(partition.get(i));
+            }
+            CombinationsIterator<Integer> it = parts.get(from);
+            for (int i = from; i < template.length; i++) {
+                List<Integer> part = it.next();
+                if (i > 0 && template[i] == template[i - 1]) {
+                    // Ensure natural order of parts, thus uniqueness of combinations.
+                    while (gt(partition.get(i - 1), part)) {
+                        if (it.hasNext()) {
+                            part = it.next();
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+                parts.set(i, it);
+                partition.set(i, part);
+                if (i + 1 < template.length) {
+                    pool.removeAll(part);
+                    it = new CombinationsIterator<>(pool, template[i + 1]);
+                }
+            }
+            return true;
+        }
+
+        private boolean gt(List<Integer> a, List<Integer> b) {
+            int size = Math.min(a.size(), b.size());
             int i = 0;
-            while (i < a.size() && itemPos.get(a.get(i)).equals(itemPos.get(b.get(i)))) {
+            while (i < size && a.get(i).equals(b.get(i))) {
                 i++;
             }
-            return itemPos.get(a.get(i)) > itemPos.get(b.get(i));
-        }
-    }
-
-    public static void main(String[] args) {
-        Partitions<Character> partitions = new Partitions<>(
-                Arrays.asList('A', 'B', 'C', 'D'),
-                new int[]{2, 2}
-        );
-        while (partitions.hasNext()) {
-            System.out.println(partitions.next());
+            return i == size ? a.size() > b.size() : a.get(i) > b.get(i);
         }
     }
 }
