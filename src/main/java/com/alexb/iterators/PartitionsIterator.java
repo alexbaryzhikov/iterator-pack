@@ -18,6 +18,16 @@ package com.alexb.iterators;
 
 import java.util.*;
 
+/**
+ * Generates all possible ways to partition elements from input collection.
+ * <p>
+ * The partition tuples are emitted in lexicographic ordering according
+ * to the order of the input collection. So, if the input collection is
+ * sorted, the combination tuples will be produced in sorted order.
+ * <p>
+ * [0, 1] &rarr; (01) (0, 1) <br>
+ * [A, B, C] &rarr; (ABC) (AB, C) (AC, B) (BC, A) (A, B, C) <br>
+ */
 public class PartitionsIterator<T> implements Iterator<List<List<T>>> {
     private final List<T> items;
     private int parts = 1;
